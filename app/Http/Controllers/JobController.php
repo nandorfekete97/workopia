@@ -112,7 +112,7 @@ class JobController extends Controller
         ]);
 
         if(request()->hasFile('company_logo')) {
-            Storage::delete('public/logos/' . basename($job->company_logo));
+            Storage::disk('public')->delete($job->company_logo);
 
             $path = request()->file('company_logo')->store('logos', 'public');
             $validatedData['company_logo'] = $path;
@@ -126,8 +126,14 @@ class JobController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(string $id): string
+    public function destroy(Job $job): RedirectResponse
     {
-        return 'Destroy';
+        if ($job->company_logo) {
+    Storage::disk('public')->delete($job->company_logo);
+}
+
+        $job->delete();
+
+        return redirect()->route('jobs.index')->with('success', 'Job listing deleted successfully.');
     }
 }
